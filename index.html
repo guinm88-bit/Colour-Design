@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Plaid Maker Mobile</title>
+    <title>Plaid Master Interactive</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -13,344 +13,329 @@
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body {
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, system-ui, sans-serif;
             background: var(--bg);
-            margin: 0;
-            padding: 10px;
-            color: #334155;
+            margin: 0; padding: 0; padding-bottom: 100px;
+            color: #1e293b;
         }
 
-        h1 { font-size: 1.2rem; margin: 10px 0; text-align: center; }
-        h3 { font-size: 0.9rem; margin: 0 0 10px 0; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-
-        .panel {
-            background: var(--panel);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        /* COMPACT STICKY PREVIEW */
+        .preview-header {
+            position: sticky; top: 0; z-index: 100;
+            background: #fff; padding: 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        /* --- PREVIEW SECTION --- */
-        .preview-box { position: sticky; top: 10px; z-index: 10; }
         canvas {
-            width: 100%;
-            aspect-ratio: 1/1;
+            width: 220px; /* Smaller mobile-friendly size */
+            height: 220px;
             background: #fff;
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            border: 1px solid #94a3b8;
             display: block;
+            margin: 0 auto;
+            touch-action: none; /* Prevent scrolling when painting on canvas */
         }
+        .canvas-hint { font-size: 10px; color: #64748b; margin-top: 4px; }
 
-        /* --- COLOR PALETTE --- */
-        .palette-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .swatch-wrapper { position: relative; }
-        .swatch {
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-        .swatch.is-base { border-color: #000; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--primary); }
-        .btn-base { 
-            display: block; width: 100%; font-size: 10px; margin-top: 4px; 
-            background: #e2e8f0; border: none; border-radius: 4px; padding: 2px;
-        }
+        /* TAB SYSTEM */
+        .tabs { display: flex; background: #fff; border-bottom: 1px solid var(--border); }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; font-weight: bold; color: #64748b; border-bottom: 2px solid transparent; }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-        .harmony-title { font-size: 0.8rem; font-weight: bold; margin: 10px 0 5px; }
-        .harmony-row { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
-        .mini-swatch { width: 35px; height: 35px; border-radius: 6px; flex-shrink: 0; }
+        .section { display: none; padding: 15px; }
+        .section.active { display: block; }
 
-        /* --- THREAD ROWS --- */
-        .thread-list { display: flex; flex-direction: column; gap: 8px; }
-        .thread-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9;
-        }
-        .color-indicator {
-            width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;
-        }
-        .thread-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
-        .width-input { width: 60px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; }
+        /* TOOLS */
+        .tool-box { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .flex-row { display: flex; align-items: center; gap: 10px; }
         
-        /* Modal-style Color Picker for Threads */
-        .color-scroller {
-            display: flex; gap: 6px; overflow-x: auto; padding: 4px 0;
-            scrollbar-width: none;
-        }
-        .color-scroller::-webkit-scrollbar { display: none; }
-        .pick-circle { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
-        .pick-circle.active { border: 2px solid var(--primary); transform: scale(1.1); }
+        /* HARMONY COLORS */
+        .harmony-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-top: 10px; display: block; }
+        .scroll-row { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; }
+        .scroll-row::-webkit-scrollbar { display: none; }
+        .swatch { width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+        .swatch.active { border: 3px solid var(--primary); box-shadow: 0 0 8px rgba(37,99,235,0.4); }
 
-        /* --- BUTTONS --- */
-        button { 
-            padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer;
-            transition: opacity 0.2s;
+        /* PATTERN ROWS */
+        .thread-row { 
+            background: #f8fafc; border: 1px solid var(--border); 
+            border-radius: 10px; padding: 10px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 10px;
         }
-        .btn-add { background: #dcfce7; color: #166534; width: 100%; margin-top: 10px; }
-        .btn-save { background: var(--primary); color: white; width: 100%; margin-top: 15px; }
-        .btn-del { background: #fee2e2; color: #991b1b; padding: 8px; }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .input-group { display: flex; align-items: center; background: #fff; border-radius: 6px; border: 1px solid var(--border); overflow: hidden; }
+        .input-group input { 
+            width: 50px; border: none; text-align: center; font-weight: bold; font-size: 16px; 
+            padding: 8px 0; outline: none; 
+        }
+        .step-btn { background: #f1f5f9; border: none; padding: 8px 12px; font-size: 18px; font-weight: bold; }
 
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .tab-btn { flex: 1; padding: 10px; background: #e2e8f0; border-radius: 0; border: 1px solid #cbd5e1; }
-        .tab-btn.active { background: white; border-bottom: none; }
+        /* FOOTER */
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 15px; background: #fff; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        button.main-btn { flex: 1; background: var(--primary); color: #fff; border: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 16px; }
+        
+        .zoom-container { padding: 10px; text-align: center; }
+        input[type="range"] { width: 80%; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Plaid Designer</h1>
-
-    <!-- PREVIEW (Sticky on Mobile) -->
-    <div class="panel preview-box">
-        <canvas id="canvas" width="600" height="600"></canvas>
-        <button class="btn-save" onclick="saveImage()">Download Design</button>
-    </div>
-
-    <!-- COLOR DISCOVERY -->
-    <div class="panel">
-        <h3>1. Color Palette</h3>
-        <div class="flex-between" style="margin-bottom:15px;">
-            <input type="color" id="baseColorInput" value="#4f46e5" oninput="updateBaseFromPicker(this.value)" style="width:50px; height:50px;">
-            <div style="font-size: 0.8rem; text-align:right;">Tap color to change base</div>
-        </div>
-        
-        <div id="paletteGrid" class="palette-grid"></div>
-
-        <div id="harmonySection">
-            <!-- Harmony swatches appear here -->
-        </div>
-    </div>
-
-    <!-- THREAD CONFIG -->
-    <div class="panel">
-        <div class="flex-between">
-            <h3>2. Pattern</h3>
-            <label style="font-size: 12px;"><input type="checkbox" id="linkWeft" checked onchange="toggleWeft()"> Link Warp/Weft</label>
-        </div>
-
-        <div id="warpSection">
-            <h4 style="margin:10px 0; font-size:13px;">Warp Threads (Vertical)</h4>
-            <div id="warpRows" class="thread-list"></div>
-            <button class="btn-add" onclick="addRow('warp')">+ Add Thread</button>
-        </div>
-
-        <div id="weftSection" style="display:none; margin-top:20px;">
-            <h4 style="margin:10px 0; font-size:13px;">Weft Threads (Horizontal)</h4>
-            <div id="weftRows" class="thread-list"></div>
-            <button class="btn-add" onclick="addRow('weft')">+ Add Thread</button>
-        </div>
-        
-        <div style="margin-top:15px;">
-            <label style="font-size: 13px;"><input type="checkbox" id="mirror" checked onchange="render()"> Mirror Sequence</label>
-        </div>
+<div class="preview-header">
+    <canvas id="plaidCanvas" width="400" height="400"></canvas>
+    <div class="canvas-hint">Tap on pattern to paint with Base Color</div>
+    <div class="zoom-container">
+        <span style="font-size:12px">Thread Scale:</span>
+        <input type="range" id="zoom" min="1" max="10" value="4" oninput="render()">
     </div>
 </div>
 
-<script>
-    // --- STATE ---
-    let baseColor = "#4f46e5";
-    let palette = ["#4f46e5", "#ffffff", "#1e293b", "#f472b6", "#0ea5e9"];
-    let warp = [{ color: "#4f46e5", width: 30 }, { color: "#ffffff", width: 5 }];
-    let weft = [{ color: "#4f46e5", width: 30 }, { color: "#ffffff", width: 5 }];
+<div class="tabs">
+    <div class="tab active" onclick="switchTab(0)">1. Colors</div>
+    <div class="tab" onclick="switchTab(1)">2. Pattern</div>
+</div>
 
-    // --- INIT ---
-    function init() {
-        renderPalette();
-        renderRows();
-        render();
+<!-- COLORS SECTION -->
+<div id="sec-0" class="section active">
+    <div class="tool-box">
+        <div class="flex-row">
+            <input type="color" id="baseColorInput" value="#4f46e5" oninput="setBase(this.value)" style="width:60px; height:60px; border:none; border-radius:10px;">
+            <div>
+                <strong>Base Color</strong><br>
+                <small>Used for painting threads</small>
+            </div>
+        </div>
+    </div>
+
+    <h3>Combinations</h3>
+    <div id="harmonies"></div>
+
+    <h3>Active Palette</h3>
+    <div id="paletteList" class="scroll-row"></div>
+</div>
+
+<!-- PATTERN SECTION -->
+<div id="sec-1" class="section">
+    <div style="margin-bottom: 15px; font-size: 14px;">
+        <label><input type="checkbox" id="linkWeft" checked onchange="toggleWeft()"> Synchronize Warp/Weft</label><br>
+        <label><input type="checkbox" id="mirror" checked onchange="render()"> Mirror Sequence</label>
+    </div>
+
+    <h4>Warp Threads (Vertical)</h4>
+    <div id="warpList"></div>
+    <button onclick="addThread('warp')" style="width:100%; padding:10px; border-radius:8px; border:1px dashed var(--primary); background:none; color:var(--primary); font-weight:bold;">+ Add Thread</button>
+
+    <div id="weftGroup" style="display:none; margin-top:20px;">
+        <h4>Weft Threads (Horizontal)</h4>
+        <div id="weftList"></div>
+        <button onclick="addThread('weft')" style="width:100%; padding:10px; border-radius:8px; border:1px dashed var(--primary); background:none; color:var(--primary); font-weight:bold;">+ Add Thread</button>
+    </div>
+</div>
+
+<div class="footer">
+    <button class="main-btn" onclick="saveImage()">Download PNG</button>
+</div>
+
+<script>
+    let baseColor = "#4f46e5";
+    let palette = ["#4f46e5", "#ffffff", "#1e293b", "#f43f5e"];
+    let warp = [{ color: "#4f46e5", width: 10 }, { color: "#ffffff", width: 2 }];
+    let weft = [{ color: "#4f46e5", width: 10 }, { color: "#ffffff", width: 2 }];
+
+    const canvas = document.getElementById('plaidCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- TAB LOGIC ---
+    function switchTab(idx) {
+        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+        document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === idx));
     }
 
     // --- COLOR LOGIC ---
-    function updateBaseFromPicker(hex) {
-        baseColor = hex;
-        if (!palette.includes(hex)) palette.push(hex);
-        renderPalette();
-    }
-
-    function renderPalette() {
-        const grid = document.getElementById('paletteGrid');
-        grid.innerHTML = '';
-        
-        palette.forEach(hex => {
-            const wrap = document.createElement('div');
-            wrap.className = 'swatch-wrapper';
-            
-            const isBase = hex.toLowerCase() === baseColor.toLowerCase();
-            wrap.innerHTML = `
-                <div class="swatch ${isBase ? 'is-base' : ''}" style="background:${hex}" onclick="setBase('${hex}')"></div>
-                <button class="btn-base" onclick="removeFromPalette('${hex}')">DEL</button>
-            `;
-            grid.appendChild(wrap);
-        });
-
-        updateHarmonies();
-        renderRows(); // Update the thread pickers
-    }
-
     function setBase(hex) {
         baseColor = hex;
-        document.getElementById('baseColorInput').value = hex;
+        if (!palette.includes(hex)) palette.push(hex);
+        updateUI();
+    }
+
+    function updateUI() {
+        renderHarmonies();
         renderPalette();
+        renderThreadLists();
+        render();
     }
 
-    function addToPalette(hex) {
-        if (!palette.includes(hex)) {
-            palette.push(hex);
-            renderPalette();
-        }
-    }
-
-    function removeFromPalette(hex) {
-        palette = palette.filter(c => c !== hex);
-        renderPalette();
-    }
-
-    function updateHarmonies() {
-        const container = document.getElementById('harmonySection');
+    function renderHarmonies() {
+        const container = document.getElementById('harmonies');
         container.innerHTML = '';
         const hsl = hexToHsl(baseColor);
-
         const schemes = {
-            "Matches": [rotateHsl(hsl, 180), rotateHsl(hsl, 30), rotateHsl(hsl, -30), lightenHsl(hsl, 20), lightenHsl(hsl, -20)]
+            "Complementary": [rotateHsl(hsl, 180)],
+            "Monochromatic": [lightenHsl(hsl, 20), lightenHsl(hsl, -20)],
+            "Triadic": [rotateHsl(hsl, 120), rotateHsl(hsl, 240)],
+            "Tetradic": [rotateHsl(hsl, 90), rotateHsl(hsl, 180), rotateHsl(hsl, 270)]
         };
 
-        for (let name in schemes) {
-            const title = document.createElement('div');
-            title.className = 'harmony-title';
-            title.innerText = name;
+        for (let type in schemes) {
+            container.innerHTML += `<span class="harmony-label">${type}</span>`;
             const row = document.createElement('div');
-            row.className = 'harmony-row';
-            
-            schemes[name].forEach(c => {
+            row.className = 'scroll-row';
+            schemes[type].forEach(c => {
                 const hex = hslToHex(c.h, c.s, c.l);
-                const s = document.createElement('div');
-                s.className = 'mini-swatch';
-                s.style.background = hex;
-                s.onclick = () => addToPalette(hex);
-                row.appendChild(s);
+                row.innerHTML += `<div class="swatch" style="background:${hex}" onclick="setBase('${hex}')"></div>`;
             });
-            container.appendChild(title);
             container.appendChild(row);
         }
     }
 
-    // --- THREAD LOGIC ---
+    function renderPalette() {
+        const list = document.getElementById('paletteList');
+        list.innerHTML = '';
+        palette.forEach(hex => {
+            const active = (hex === baseColor) ? 'active' : '';
+            list.innerHTML += `<div class="swatch ${active}" style="background:${hex}" onclick="setBase('${hex}')"></div>`;
+        });
+    }
+
+    // --- PATTERN LOGIC ---
     function toggleWeft() {
-        const linked = document.getElementById('linkWeft').checked;
-        document.getElementById('weftSection').style.display = linked ? 'none' : 'block';
+        document.getElementById('weftGroup').style.display = document.getElementById('linkWeft').checked ? 'none' : 'block';
         render();
     }
 
-    function addRow(type) {
+    function addThread(type) {
         const target = (type === 'warp') ? warp : weft;
-        target.push({ color: palette[0], width: 10 });
-        renderRows();
-        render();
+        target.push({ color: baseColor, width: 4 });
+        updateUI();
     }
 
-    function renderRows() {
+    function renderThreadLists() {
         ['warp', 'weft'].forEach(type => {
-            const container = document.getElementById(type + 'Rows');
+            const container = document.getElementById(type + 'List');
             const data = (type === 'warp') ? warp : weft;
             container.innerHTML = '';
-
-            data.forEach((row, i) => {
-                const div = document.createElement('div');
-                div.className = 'thread-row';
-                
-                // Color scroll selector
-                let colorOptions = palette.map(hex => `
-                    <div class="pick-circle ${row.color === hex ? 'active' : ''}" 
-                         style="background:${hex}" 
-                         onclick="updateThread('${type}', ${i}, 'color', '${hex}')"></div>
-                `).join('');
-
-                div.innerHTML = `
-                    <div class="thread-controls">
-                        <div class="color-scroller">${colorOptions}</div>
-                        <div class="flex-between">
-                            <input type="number" class="width-input" value="${row.width}" 
-                                   onchange="updateThread('${type}', ${i}, 'width', this.value)">
-                            <button class="btn-del" onclick="removeThread('${type}', ${i})">✕</button>
-                        </div>
+            data.forEach((t, i) => {
+                const row = document.createElement('div');
+                row.className = 'thread-row';
+                row.innerHTML = `
+                    <div class="color-dot" style="background:${t.color}"></div>
+                    <div class="input-group">
+                        <button class="step-btn" onclick="adjustWidth('${type}', ${i}, -1)">-</button>
+                        <input type="number" inputmode="numeric" value="${t.width}" onchange="updateWidth('${type}', ${i}, this.value)">
+                        <button class="step-btn" onclick="adjustWidth('${type}', ${i}, 1)">+</button>
                     </div>
+                    <button onclick="removeThread('${type}', ${i})" style="margin-left:auto; background:none; border:none; color:#ef4444;">✕</button>
                 `;
-                container.appendChild(div);
+                container.appendChild(row);
             });
         });
     }
 
-    function updateThread(type, index, field, value) {
+    function adjustWidth(type, i, delta) {
         const target = (type === 'warp') ? warp : weft;
-        target[index][field] = (field === 'width') ? parseInt(value) : value;
-        render();
-        if (field === 'color') renderRows(); // refresh active state
+        target[i].width = Math.max(1, target[i].width + delta);
+        updateUI();
     }
 
-    function removeThread(type, index) {
+    function updateWidth(type, i, val) {
         const target = (type === 'warp') ? warp : weft;
-        target.splice(index, 1);
-        renderRows();
+        target[i].width = Math.max(1, parseInt(val) || 1);
         render();
     }
 
-    // --- HIGH SPEED RENDER ENGINE ---
-    function render() {
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const linked = document.getElementById('linkWeft').checked;
+    function removeThread(type, i) {
+        const target = (type === 'warp') ? warp : weft;
+        target.splice(i, 1);
+        updateUI();
+    }
+
+    // --- INTERACTIVE PAINTING ---
+    canvas.addEventListener('pointerdown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (canvas.height / rect.height);
         
-        const warpSeq = getFullSequence(warp);
-        const weftSeq = linked ? warpSeq : getFullSequence(weft);
+        const zoom = parseInt(document.getElementById('zoom').value);
+        const warpSeq = getFullSeq(warp);
+        const weftSeq = document.getElementById('linkWeft').checked ? warpSeq : getFullSeq(weft);
+
+        // Find which thread object index was clicked
+        if (warpSeq.length > 0) {
+            const warpIdxAtPixel = Math.floor(x / zoom) % warpSeq.length;
+            const warpThreadIdx = getThreadIndexAtSequencePos(warp, warpIdxAtPixel);
+            if (warpThreadIdx !== -1) warp[warpThreadIdx].color = baseColor;
+        }
+
+        if (weftSeq.length > 0) {
+            const weftIdxAtPixel = Math.floor(y / zoom) % weftSeq.length;
+            const weftThreadIdx = getThreadIndexAtSequencePos(document.getElementById('linkWeft').checked ? warp : weft, weftIdxAtPixel);
+            if (weftThreadIdx !== -1) {
+                if (document.getElementById('linkWeft').checked) warp[weftThreadIdx].color = baseColor;
+                else weft[weftThreadIdx].color = baseColor;
+            }
+        }
+        updateUI();
+    });
+
+    function getThreadIndexAtSequencePos(threadArr, pos) {
+        let currentPos = 0;
+        const mirror = document.getElementById('mirror').checked;
+        
+        // Handle mirrored logic
+        let fullArr = [...threadArr];
+        if (mirror && threadArr.length > 1) {
+            const mirrorPart = [...threadArr].slice(0, -1).reverse();
+            fullArr = threadArr.concat(mirrorPart);
+        }
+
+        for (let i = 0; i < fullArr.length; i++) {
+            currentPos += fullArr[i].width;
+            if (pos < currentPos) {
+                // Return the original index from threadArr
+                if (mirror && i >= threadArr.length) {
+                    return (threadArr.length - 2) - (i - threadArr.length);
+                }
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // --- RENDER ENGINE ---
+    function render() {
+        const zoom = parseInt(document.getElementById('zoom').value);
+        const warpSeq = getFullSeq(warp);
+        const weftSeq = document.getElementById('linkWeft').checked ? warpSeq : getFullSeq(weft);
 
         if (!warpSeq.length || !weftSeq.length) return;
 
-        // Clear
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Calculate scale
-        const totalW = warpSeq.length;
-        const totalH = weftSeq.length;
-        const unitX = canvas.width / totalW;
-        const unitY = canvas.height / totalH;
-
-        // 1. Draw Warp (Vertical Stripes)
-        let currentX = 0;
-        warpSeq.forEach(color => {
-            ctx.fillStyle = color;
-            ctx.fillRect(currentX, 0, unitX + 0.5, canvas.height);
-            currentX += unitX;
-        });
-
-        // 2. Draw Weft (Horizontal Stripes) with Blend
-        // Using 'multiply' or 'overlay' creates realistic thread overlap
-        ctx.globalAlpha = 0.5; 
-        let currentY = 0;
-        weftSeq.forEach(color => {
-            ctx.fillStyle = color;
-            ctx.fillRect(0, currentY, canvas.width, unitY + 0.5);
-            currentY += unitY;
-        });
-        ctx.globalAlpha = 1.0;
+        for (let i = 0; i < canvas.width / zoom; i++) {
+            for (let j = 0; j < canvas.height / zoom; j++) {
+                const c1 = warpSeq[i % warpSeq.length];
+                const c2 = weftSeq[j % weftSeq.length];
+                ctx.fillStyle = blend(c1, c2);
+                ctx.fillRect(i * zoom, j * zoom, zoom, zoom);
+            }
+        }
     }
 
-    function getFullSequence(arr) {
+    function getFullSeq(arr) {
         let s = [];
-        arr.forEach(item => {
-            for(let i=0; i<item.width; i++) s.push(item.color);
-        });
-        if (document.getElementById('mirror').checked && s.length > 0) {
-            const lastRowWidth = arr[arr.length-1].width;
-            const mirrorPart = [...s].slice(0, -lastRowWidth).reverse();
-            s = s.concat(mirrorPart);
+        arr.forEach(t => { for(let i=0; i<t.width; i++) s.push(t.color); });
+        if (document.getElementById('mirror').checked && arr.length > 1) {
+            const lastW = arr[arr.length-1].width;
+            s = s.concat([...s].slice(0, -lastW).reverse());
         }
         return s;
+    }
+
+    function blend(hex1, hex2) {
+        const r1 = parseInt(hex1.substr(1,2),16), g1 = parseInt(hex1.substr(3,2),16), b1 = parseInt(hex1.substr(5,2),16);
+        const r2 = parseInt(hex2.substr(1,2),16), g2 = parseInt(hex2.substr(3,2),16), b2 = parseInt(hex2.substr(5,2),16);
+        return `rgb(${(r1+r2)/2}, ${(g1+g2)/2}, ${(b1+b2)/2})`;
     }
 
     // --- MATH HELPERS ---
@@ -371,10 +356,8 @@
         }
         return { h: h * 360, s: s * 100, l: l * 100 };
     }
-
     function hslToHex(h, s, l) {
-        l /= 100;
-        const a = s * Math.min(l, 1 - l) / 100;
+        l /= 100; const a = s * Math.min(l, 1 - l) / 100;
         const f = n => {
             const k = (n + h / 30) % 12;
             const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
@@ -386,13 +369,14 @@
     function lightenHsl(hsl, amt) { return { ...hsl, l: Math.max(0, Math.min(100, hsl.l + amt)) }; }
 
     function saveImage() {
-        const link = document.createElement('a');
-        link.download = 'plaid-design.png';
-        link.href = document.getElementById('canvas').toDataURL();
-        link.click();
+        const a = document.createElement("a");
+        a.download = "my-plaid.png";
+        a.href = canvas.toDataURL();
+        a.click();
     }
 
-    init();
+    updateUI();
 </script>
+
 </body>
 </html>
