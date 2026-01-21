@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Plaid Maker Mobile</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --panel: #ffffff;
+            --border: #cbd5e1;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 10px;
+            color: #334155;
+        }
+
+        h1 { font-size: 1.2rem; margin: 10px 0; text-align: center; }
+        h3 { font-size: 0.9rem; margin: 0 0 10px 0; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+
+        .panel {
+            background: var(--panel);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* --- PREVIEW SECTION --- */
+        .preview-box { position: sticky; top: 10px; z-index: 10; }
+        canvas {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: block;
+        }
+
+        /* --- COLOR PALETTE --- */
+        .palette-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .swatch-wrapper { position: relative; }
+        .swatch {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .swatch.is-base { border-color: #000; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--primary); }
+        .btn-base { 
+            display: block; width: 100%; font-size: 10px; margin-top: 4px; 
+            background: #e2e8f0; border: none; border-radius: 4px; padding: 2px;
+        }
+
+        .harmony-title { font-size: 0.8rem; font-weight: bold; margin: 10px 0 5px; }
+        .harmony-row { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
+        .mini-swatch { width: 35px; height: 35px; border-radius: 6px; flex-shrink: 0; }
+
+        /* --- THREAD ROWS --- */
+        .thread-list { display: flex; flex-direction: column; gap: 8px; }
+        .thread-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9;
+        }
+        .color-indicator {
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;
+        }
+        .thread-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .width-input { width: 60px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; }
+        
+        /* Modal-style Color Picker for Threads */
+        .color-scroller {
+            display: flex; gap: 6px; overflow-x: auto; padding: 4px 0;
+            scrollbar-width: none;
+        }
+        .color-scroller::-webkit-scrollbar { display: none; }
+        .pick-circle { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+        .pick-circle.active { border: 2px solid var(--primary); transform: scale(1.1); }
+
+        /* --- BUTTONS --- */
+        button { 
+            padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-add { background: #dcfce7; color: #166534; width: 100%; margin-top: 10px; }
+        .btn-save { background: var(--primary); color: white; width: 100%; margin-top: 15px; }
+        .btn-del { background: #fee2e2; color: #991b1b; padding: 8px; }
+
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .tab-btn { flex: 1; padding: 10px; background: #e2e8f0; border-radius: 0; border: 1px solid #cbd5e1; }
+        .tab-btn.active { background: white; border-bottom: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Plaid Designer</h1>
+
+    <!-- PREVIEW (Sticky on Mobile) -->
+    <div class="panel preview-box">
+        <canvas id="canvas" width="600" height="600"></canvas>
+        <button class="btn-save" onclick="saveImage()">Download Design</button>
+    </div>
+
+    <!-- COLOR DISCOVERY -->
+    <div class="panel">
+        <h3>1. Color Palette</h3>
+        <div class="flex-between" style="margin-bottom:15px;">
+            <input type="color" id="baseColorInput" value="#4f46e5" oninput="updateBaseFromPicker(this.value)" style="width:50px; height:50px;">
+            <div style="font-size: 0.8rem; text-align:right;">Tap color to change base</div>
+        </div>
+        
+        <div id="paletteGrid" class="palette-grid"></div>
+
+        <div id="harmonySection">
+            <!-- Harmony swatches appear here -->
+        </div>
+    </div>
+
+    <!-- THREAD CONFIG -->
+    <div class="panel">
+        <div class="flex-between">
+            <h3>2. Pattern</h3>
+            <label style="font-size: 12px;"><input type="checkbox" id="linkWeft" checked onchange="toggleWeft()"> Link Warp/Weft</label>
+        </div>
+
+        <div id="warpSection">
+            <h4 style="margin:10px 0; font-size:13px;">Warp Threads (Vertical)</h4>
+            <div id="warpRows" class="thread-list"></div>
+            <button class="btn-add" onclick="addRow('warp')">+ Add Thread</button>
+        </div>
+
+        <div id="weftSection" style="display:none; margin-top:20px;">
+            <h4 style="margin:10px 0; font-size:13px;">Weft Threads (Horizontal)</h4>
+            <div id="weftRows" class="thread-list"></div>
+            <button class="btn-add" onclick="addRow('weft')">+ Add Thread</button>
+        </div>
+        
+        <div style="margin-top:15px;">
+            <label style="font-size: 13px;"><input type="checkbox" id="mirror" checked onchange="render()"> Mirror Sequence</label>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- STATE ---
+    let baseColor = "#4f46e5";
+    let palette = ["#4f46e5", "#ffffff", "#1e293b", "#f472b6", "#0ea5e9"];
+    let warp = [{ color: "#4f46e5", width: 30 }, { color: "#ffffff", width: 5 }];
+    let weft = [{ color: "#4f46e5", width: 30 }, { color: "#ffffff", width: 5 }];
+
+    // --- INIT ---
+    function init() {
+        renderPalette();
+        renderRows();
+        render();
+    }
+
+    // --- COLOR LOGIC ---
+    function updateBaseFromPicker(hex) {
+        baseColor = hex;
+        if (!palette.includes(hex)) palette.push(hex);
+        renderPalette();
+    }
+
+    function renderPalette() {
+        const grid = document.getElementById('paletteGrid');
+        grid.innerHTML = '';
+        
+        palette.forEach(hex => {
+            const wrap = document.createElement('div');
+            wrap.className = 'swatch-wrapper';
+            
+            const isBase = hex.toLowerCase() === baseColor.toLowerCase();
+            wrap.innerHTML = `
+                <div class="swatch ${isBase ? 'is-base' : ''}" style="background:${hex}" onclick="setBase('${hex}')"></div>
+                <button class="btn-base" onclick="removeFromPalette('${hex}')">DEL</button>
+            `;
+            grid.appendChild(wrap);
+        });
+
+        updateHarmonies();
+        renderRows(); // Update the thread pickers
+    }
+
+    function setBase(hex) {
+        baseColor = hex;
+        document.getElementById('baseColorInput').value = hex;
+        renderPalette();
+    }
+
+    function addToPalette(hex) {
+        if (!palette.includes(hex)) {
+            palette.push(hex);
+            renderPalette();
+        }
+    }
+
+    function removeFromPalette(hex) {
+        palette = palette.filter(c => c !== hex);
+        renderPalette();
+    }
+
+    function updateHarmonies() {
+        const container = document.getElementById('harmonySection');
+        container.innerHTML = '';
+        const hsl = hexToHsl(baseColor);
+
+        const schemes = {
+            "Matches": [rotateHsl(hsl, 180), rotateHsl(hsl, 30), rotateHsl(hsl, -30), lightenHsl(hsl, 20), lightenHsl(hsl, -20)]
+        };
+
+        for (let name in schemes) {
+            const title = document.createElement('div');
+            title.className = 'harmony-title';
+            title.innerText = name;
+            const row = document.createElement('div');
+            row.className = 'harmony-row';
+            
+            schemes[name].forEach(c => {
+                const hex = hslToHex(c.h, c.s, c.l);
+                const s = document.createElement('div');
+                s.className = 'mini-swatch';
+                s.style.background = hex;
+                s.onclick = () => addToPalette(hex);
+                row.appendChild(s);
+            });
+            container.appendChild(title);
+            container.appendChild(row);
+        }
+    }
+
+    // --- THREAD LOGIC ---
+    function toggleWeft() {
+        const linked = document.getElementById('linkWeft').checked;
+        document.getElementById('weftSection').style.display = linked ? 'none' : 'block';
+        render();
+    }
+
+    function addRow(type) {
+        const target = (type === 'warp') ? warp : weft;
+        target.push({ color: palette[0], width: 10 });
+        renderRows();
+        render();
+    }
+
+    function renderRows() {
+        ['warp', 'weft'].forEach(type => {
+            const container = document.getElementById(type + 'Rows');
+            const data = (type === 'warp') ? warp : weft;
+            container.innerHTML = '';
+
+            data.forEach((row, i) => {
+                const div = document.createElement('div');
+                div.className = 'thread-row';
+                
+                // Color scroll selector
+                let colorOptions = palette.map(hex => `
+                    <div class="pick-circle ${row.color === hex ? 'active' : ''}" 
+                         style="background:${hex}" 
+                         onclick="updateThread('${type}', ${i}, 'color', '${hex}')"></div>
+                `).join('');
+
+                div.innerHTML = `
+                    <div class="thread-controls">
+                        <div class="color-scroller">${colorOptions}</div>
+                        <div class="flex-between">
+                            <input type="number" class="width-input" value="${row.width}" 
+                                   onchange="updateThread('${type}', ${i}, 'width', this.value)">
+                            <button class="btn-del" onclick="removeThread('${type}', ${i})">✕</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        });
+    }
+
+    function updateThread(type, index, field, value) {
+        const target = (type === 'warp') ? warp : weft;
+        target[index][field] = (field === 'width') ? parseInt(value) : value;
+        render();
+        if (field === 'color') renderRows(); // refresh active state
+    }
+
+    function removeThread(type, index) {
+        const target = (type === 'warp') ? warp : weft;
+        target.splice(index, 1);
+        renderRows();
+        render();
+    }
+
+    // --- HIGH SPEED RENDER ENGINE ---
+    function render() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const linked = document.getElementById('linkWeft').checked;
+        
+        const warpSeq = getFullSequence(warp);
+        const weftSeq = linked ? warpSeq : getFullSequence(weft);
+
+        if (!warpSeq.length || !weftSeq.length) return;
+
+        // Clear
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Calculate scale
+        const totalW = warpSeq.length;
+        const totalH = weftSeq.length;
+        const unitX = canvas.width / totalW;
+        const unitY = canvas.height / totalH;
+
+        // 1. Draw Warp (Vertical Stripes)
+        let currentX = 0;
+        warpSeq.forEach(color => {
+            ctx.fillStyle = color;
+            ctx.fillRect(currentX, 0, unitX + 0.5, canvas.height);
+            currentX += unitX;
+        });
+
+        // 2. Draw Weft (Horizontal Stripes) with Blend
+        // Using 'multiply' or 'overlay' creates realistic thread overlap
+        ctx.globalAlpha = 0.5; 
+        let currentY = 0;
+        weftSeq.forEach(color => {
+            ctx.fillStyle = color;
+            ctx.fillRect(0, currentY, canvas.width, unitY + 0.5);
+            currentY += unitY;
+        });
+        ctx.globalAlpha = 1.0;
+    }
+
+    function getFullSequence(arr) {
+        let s = [];
+        arr.forEach(item => {
+            for(let i=0; i<item.width; i++) s.push(item.color);
+        });
+        if (document.getElementById('mirror').checked && s.length > 0) {
+            const lastRowWidth = arr[arr.length-1].width;
+            const mirrorPart = [...s].slice(0, -lastRowWidth).reverse();
+            s = s.concat(mirrorPart);
+        }
+        return s;
+    }
+
+    // --- MATH HELPERS ---
+    function hexToHsl(hex) {
+        let r = parseInt(hex.substr(1,2),16)/255, g = parseInt(hex.substr(3,2),16)/255, b = parseInt(hex.substr(5,2),16)/255;
+        let max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+        if(max == min) h = s = 0;
+        else {
+            let d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch(max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return { h: h * 360, s: s * 100, l: l * 100 };
+    }
+
+    function hslToHex(h, s, l) {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = n => {
+            const k = (n + h / 30) % 12;
+            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+    }
+    function rotateHsl(hsl, deg) { return { ...hsl, h: (hsl.h + deg) % 360 }; }
+    function lightenHsl(hsl, amt) { return { ...hsl, l: Math.max(0, Math.min(100, hsl.l + amt)) }; }
+
+    function saveImage() {
+        const link = document.createElement('a');
+        link.download = 'plaid-design.png';
+        link.href = document.getElementById('canvas').toDataURL();
+        link.click();
+    }
+
+    init();
+</script>
+</body>
+</html>
