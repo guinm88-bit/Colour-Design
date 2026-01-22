@@ -234,8 +234,9 @@
             data.forEach((t, i) => {
                 const row = document.createElement('div');
                 row.className = 'thread-item';
+                // Triggering numeric keypad with inputmode and pattern
                 row.innerHTML = `<div class="color-preview" style="background:${t.color}" onclick="openDD(event, '${type}', ${i})"></div>
-                                 <input type="number" class="width-input" value="${t.width}" oninput="updateWidth('${type}',${i},this.value)">`;
+                                 <input type="number" inputmode="numeric" pattern="[0-9]*" class="width-input" value="${t.width}" oninput="updateWidth('${type}',${i},this.value)">`;
                 cont.appendChild(row);
             });
         });
