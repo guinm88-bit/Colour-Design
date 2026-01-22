@@ -7,22 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Plaid Master Pro</title>
     <style>
-        :root {
-            --primary: #4a90e2;
-            --bg: #ffffff;
-            --border: #333;
-        }
-
+        :root { --primary: #4a90e2; --bg: #ffffff; --border: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: sans-serif;
-            background: var(--bg); margin: 0; color: #333;
+            font-family: sans-serif; background: var(--bg); margin: 0; color: #333;
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
-        /* --- PREVIEW AREA --- */
         .preview-header {
-            flex-shrink: 0; background: #fff; padding: 10px;
+            flex-shrink: 0; background: #fff; padding: 5px;
             display: flex; flex-direction: column; align-items: center;
             border-bottom: 2px solid #eee; z-index: 100;
         }
@@ -31,70 +24,56 @@
             aspect-ratio: 1.6/1; border: 2px solid #333; image-rendering: pixelated;
         }
 
-        .nav-bar {
-            display: flex; justify-content: space-around; 
-            width: 100%; max-width: 450px; margin: 10px 0; gap: 8px;
-        }
+        .nav-bar { display: flex; justify-content: space-around; width: 100%; max-width: 450px; margin: 5px 0; gap: 5px; }
         .nav-btn {
             flex: 1; background: var(--primary); color: white; border: none;
-            padding: 10px 5px; border-radius: 4px; font-size: 12px; cursor: pointer;
+            padding: 8px 4px; border-radius: 4px; font-size: 11px; cursor: pointer;
             font-weight: bold; text-transform: uppercase;
         }
 
         #zoomCont { 
-            display: none; position: absolute; background: white; padding: 15px; 
-            border: 2px solid #333; z-index: 1000; top: 150px; border-radius: 8px; 
+            display: none; position: absolute; background: white; padding: 10px; 
+            border: 2px solid #333; z-index: 1000; top: 130px; border-radius: 8px; 
         }
 
-        /* --- SCROLL SYSTEM --- */
-        .main-scroller {
-            flex: 1; display: flex; overflow-x: auto;
-            scroll-snap-type: x mandatory; scroll-behavior: smooth;
-        }
+        .main-scroller { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
         .main-scroller::-webkit-scrollbar { display: none; }
+        .pane { min-width: 100%; scroll-snap-align: start; padding: 10px; overflow-y: auto; }
 
-        .pane {
-            min-width: 100%; scroll-snap-align: start;
-            padding: 15px; overflow-y: auto;
-        }
+        /* --- PICKER & HARMONY UI --- */
+        .picker-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .picker-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .picker-label { font-size: 9px; font-weight: bold; color: #666; text-transform: uppercase; }
 
-        /* --- PALETTE UI --- */
-        .harmony-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .harmony-group { text-align: center; margin-bottom: 10px; }
-        .harmony-group.full-width { grid-column: span 2; }
-        
-        .harmony-title { font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 4px; display: block; }
-        .swatch-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+        .harmony-section { display: flex; flex-direction: column; gap: 8px; }
+        .harmony-row { display: flex; justify-content: space-between; gap: 5px; }
+        .harmony-group { flex: 1; text-align: center; }
+        .harmony-title { font-size: 9px; font-weight: bold; color: #888; text-transform: uppercase; margin-bottom: 2px; display: block; }
+        .swatch-row { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
         
         .swatch { 
-            width: 38px; height: 38px; border-radius: 6px; border: 1px solid #999; 
+            width: 32px; height: 32px; border-radius: 4px; border: 1px solid #999; 
             cursor: pointer; position: relative; transition: transform 0.1s;
         }
         .swatch:active { transform: scale(0.9); }
-        
-        .active-palette-section { border-top: 2px solid #eee; margin-top: 10px; padding-top: 10px; }
+        .active-palette-section { border-top: 1px solid #eee; margin-top: 8px; padding-top: 8px; }
         .del-btn { 
-            position: absolute; top: -8px; right: -8px; background: #ff4444; 
-            color: white; border: none; border-radius: 50%; width: 20px; height: 20px; 
-            font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            position: absolute; top: -6px; right: -6px; background: #ff4444; 
+            color: white; border: none; border-radius: 50%; width: 16px; height: 16px; 
+            font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
         /* --- THREAD UI --- */
-        .thread-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .thread-col { display: flex; flex-direction: column; gap: 12px; }
-        .thread-item { display: flex; align-items: center; gap: 8px; }
-        .color-preview { width: 36px; height: 36px; border: 2px solid #333; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
-        .width-input { width: 100%; border: 1px solid #333; padding: 8px; border-radius: 4px; font-weight: bold; }
+        .thread-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .thread-col { display: flex; flex-direction: column; gap: 8px; }
+        .thread-item { display: flex; align-items: center; gap: 6px; }
+        .color-preview { width: 30px; height: 30px; border: 2px solid #333; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
+        .width-input { width: 100%; border: 1px solid #333; padding: 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
 
         .dd-menu {
             position: absolute; background: white; border: 2px solid #333; 
-            z-index: 2000; padding: 8px; display: none; grid-template-columns: repeat(3, 1fr); gap: 8px;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.1); border-radius: 8px;
+            z-index: 2000; padding: 6px; display: none; grid-template-columns: repeat(3, 1fr); gap: 6px;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.1); border-radius: 6px;
         }
 
         @media (min-width: 900px) {
@@ -109,57 +88,55 @@
 
 <div class="preview-header">
     <canvas id="plaidCanvas" width="900" height="500"></canvas>
-    
     <div class="nav-bar">
         <button class="nav-btn" onclick="toggleZoom()">Zoom</button>
         <button class="nav-btn toggle-btn" onclick="scrollToPane(0)">Palette</button>
         <button class="nav-btn toggle-btn" onclick="scrollToPane(1)">Threads</button>
         <button class="nav-btn" onclick="saveImage()">Download</button>
     </div>
-
     <div id="zoomCont">
-        <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px;">PIXEL SIZE</label>
+        <label style="font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px;">PIXEL SIZE</label>
         <input type="range" id="zoom" min="1" max="50" value="2" oninput="render()">
     </div>
 </div>
 
 <div class="main-scroller" id="scroller">
-    <!-- PANE 1: COLOR ENGINE -->
     <div class="pane">
-        <div class="harmony-group" style="margin-bottom: 15px;">
-            <span class="harmony-title">Base Color Picker</span>
-            <div class="swatch-row" style="align-items: center; gap: 15px;">
-                <input type="color" id="baseInput" value="#4a90e2" oninput="previewBase(this.value)" style="width:40px; height:40px; border:2px solid #333; border-radius:8px; cursor:pointer;">
-                <button onclick="addCurrentBase()" style="padding: 8px 12px; background: #333; color: white; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">+ ADD TO PALETTE</button>
+        <div class="picker-row">
+            <div class="picker-item">
+                <span class="picker-label">Direct Add</span>
+                <input type="color" value="#4a90e2" onchange="palette.push(this.value.toUpperCase()); updateUI();" style="width:35px; height:35px; border:2px solid #333; border-radius:6px; cursor:pointer;">
+            </div>
+            <div class="picker-item">
+                <span class="picker-label">Harmony Engine</span>
+                <input type="color" id="baseInput" value="#4a90e2" oninput="previewBase(this.value)" style="width:35px; height:35px; border:2px solid #333; border-radius:6px; cursor:pointer;">
             </div>
         </div>
 
-        <div id="harmonyLists" class="harmony-grid"></div>
+        <div class="harmony-section" id="harmonyLists"></div>
 
         <div class="active-palette-section">
             <span class="harmony-title" style="text-align: center;">Active Palette</span>
-            <div class="swatch-row" id="paletteList" style="margin-top: 5px;"></div>
+            <div class="swatch-row" id="paletteList"></div>
         </div>
     </div>
 
-    <!-- PANE 2: THREAD ENGINE -->
     <div class="pane">
-        <div style="text-align: center; margin-bottom: 15px; background: #f0f0f0; padding: 8px; border-radius: 8px;">
-            <label style="font-size: 12px; font-weight: bold; cursor: pointer;">
-                <input type="checkbox" id="linkWeft" checked onchange="toggleWeft()"> Use Warp Pattern for Weft
+        <div style="text-align: center; margin-bottom: 10px; background: #f0f0f0; padding: 6px; border-radius: 6px;">
+            <label style="font-size: 11px; font-weight: bold; cursor: pointer;">
+                <input type="checkbox" id="linkWeft" checked onchange="toggleWeft()"> Link Warp to Weft
             </label>
         </div>
-
         <div class="thread-grid">
             <div class="thread-col">
-                <center><b style="font-size: 12px; text-transform: uppercase;">Warp</b></center>
+                <center><b style="font-size: 11px; text-transform: uppercase;">Warp</b></center>
                 <div id="warpList"></div>
-                <button onclick="addThread('warp')" style="padding: 6px; border: 2px dashed #ccc; background: none; cursor: pointer; border-radius: 4px; font-size: 11px;">+ Add Warp</button>
+                <button onclick="addThread('warp')" style="padding: 5px; border: 2px dashed #ccc; background: none; cursor: pointer; border-radius: 4px; font-size: 10px;">+ Warp</button>
             </div>
             <div class="thread-col" id="weftCol" style="opacity: 0.3; pointer-events: none;">
-                <center><b style="font-size: 12px; text-transform: uppercase;">Weft</b></center>
+                <center><b style="font-size: 11px; text-transform: uppercase;">Weft</b></center>
                 <div id="weftList"></div>
-                <button onclick="addThread('weft')" style="padding: 6px; border: 2px dashed #ccc; background: none; cursor: pointer; border-radius: 4px; font-size: 11px;">+ Add Weft</button>
+                <button onclick="addThread('weft')" style="padding: 5px; border: 2px dashed #ccc; background: none; cursor: pointer; border-radius: 4px; font-size: 10px;">+ Weft</button>
             </div>
         </div>
     </div>
@@ -176,56 +153,41 @@
     const canvas = document.getElementById('plaidCanvas');
     const ctx = canvas.getContext('2d');
 
-    function scrollToPane(idx) {
-        document.getElementById('scroller').scrollLeft = idx * window.innerWidth;
-    }
-
-    function toggleZoom() {
-        const z = document.getElementById('zoomCont');
-        z.style.display = z.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function previewBase(hex) {
-        currentBase = hex.toUpperCase();
-        renderHarmonies(currentBase);
-    }
-
-    function addCurrentBase() {
-        if (!palette.includes(currentBase)) {
-            palette.push(currentBase);
-            updateUI();
-        }
-    }
+    function scrollToPane(idx) { document.getElementById('scroller').scrollLeft = idx * window.innerWidth; }
+    function toggleZoom() { const z = document.getElementById('zoomCont'); z.style.display = z.style.display === 'block' ? 'none' : 'block'; }
+    function previewBase(hex) { currentBase = hex.toUpperCase(); renderHarmonies(currentBase); }
 
     function renderHarmonies(base) {
         const cont = document.getElementById('harmonyLists');
         cont.innerHTML = '';
         const hsl = hexToHsl(base);
         
-        const types = [
-            { name: "Complimentary", colors: [rotateHsl(hsl, 180)] },
-            { name: "Monochromatic", colors: [lightenHsl(hsl, 25), lightenHsl(hsl, -25)] },
-            { name: "Analogous", colors: [rotateHsl(hsl, -30), rotateHsl(hsl, 30)] },
-            { name: "Triadic", colors: [rotateHsl(hsl, 120), rotateHsl(hsl, 240)] },
-            { name: "Tetradic", colors: [rotateHsl(hsl, 90), rotateHsl(hsl, 180), rotateHsl(hsl, 270)], full: true }
+        const groups = [
+            [{n:"Comp.", c:[rotateHsl(hsl, 180)]}, {n:"Mono.", c:[lightenHsl(hsl, 25), lightenHsl(hsl,-25)]}, {n:"Anal.", c:[rotateHsl(hsl,-30), rotateHsl(hsl,30)]}],
+            [{n:"Triad.", c:[rotateHsl(hsl,120), rotateHsl(hsl,240)]}, {n:"Tetra.", c:[rotateHsl(hsl,90), rotateHsl(hsl,180), rotateHsl(hsl,270)]}]
         ];
 
-        types.forEach(t => {
-            const div = document.createElement('div');
-            div.className = 'harmony-group' + (t.full ? ' full-width' : '');
-            div.innerHTML = `<span class="harmony-title">${t.name}</span>`;
-            const row = document.createElement('div');
-            row.className = 'swatch-row';
-            t.colors.forEach(c => {
-                const hex = hslToHex(c.h, c.s, c.l);
-                const s = document.createElement('div');
-                s.className = 'swatch';
-                s.style.background = hex;
-                s.onclick = () => { if(!palette.includes(hex)) palette.push(hex); updateUI(); };
-                row.appendChild(s);
+        groups.forEach(rowArr => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'harmony-row';
+            rowArr.forEach(t => {
+                const g = document.createElement('div');
+                g.className = 'harmony-group';
+                g.innerHTML = `<span class="harmony-title">${t.n}</span>`;
+                const sRow = document.createElement('div');
+                sRow.className = 'swatch-row';
+                t.c.forEach(color => {
+                    const hex = hslToHex(color.h, color.s, color.l);
+                    const s = document.createElement('div');
+                    s.className = 'swatch';
+                    s.style.background = hex;
+                    s.onclick = () => { if(!palette.includes(hex)) palette.push(hex); updateUI(); };
+                    sRow.appendChild(s);
+                });
+                g.appendChild(sRow);
+                rowDiv.appendChild(g);
             });
-            div.appendChild(row);
-            cont.appendChild(div);
+            cont.appendChild(rowDiv);
         });
     }
 
@@ -247,10 +209,8 @@
             data.forEach((t, i) => {
                 const row = document.createElement('div');
                 row.className = 'thread-item';
-                row.innerHTML = `
-                    <div class="color-preview" style="background:${t.color}" onclick="openDD(event, '${type}', ${i})"></div>
-                    <input type="number" class="width-input" value="${t.width}" oninput="updateWidth('${type}',${i},this.value)">
-                `;
+                row.innerHTML = `<div class="color-preview" style="background:${t.color}" onclick="openDD(event, '${type}', ${i})"></div>
+                                 <input type="number" class="width-input" value="${t.width}" oninput="updateWidth('${type}',${i},this.value)">`;
                 cont.appendChild(row);
             });
         });
@@ -259,62 +219,32 @@
 
     function openDD(e, type, idx) {
         const menu = document.getElementById('ddMenu');
-        menu.style.display = 'grid';
-        menu.style.top = (e.pageY + 10) + 'px';
-        menu.style.left = (e.pageX + 10) + 'px';
+        menu.style.display = 'grid'; menu.style.top = (e.pageY + 10) + 'px'; menu.style.left = (e.pageX + 10) + 'px';
         menu.innerHTML = '';
         palette.forEach(hex => {
             const opt = document.createElement('div');
-            opt.className = 'swatch';
-            opt.style.background = hex;
-            opt.onclick = () => {
-                const target = (type === 'warp') ? warp : weft;
-                target[idx].color = hex;
-                menu.style.display = 'none';
-                updateUI();
-            };
+            opt.className = 'swatch'; opt.style.background = hex;
+            opt.onclick = () => { (type === 'warp' ? warp : weft)[idx].color = hex; menu.style.display = 'none'; updateUI(); };
             menu.appendChild(opt);
         });
     }
 
     window.onclick = (e) => { if (!e.target.classList.contains('color-preview')) document.getElementById('ddMenu').style.display = 'none'; };
-
-    function updateWidth(type, i, val) {
-        const target = (type === 'warp') ? warp : weft;
-        target[i].width = parseInt(val) || 1;
-        render();
-    }
-
-    function addThread(type) {
-        const target = (type === 'warp') ? warp : weft;
-        target.push({ color: palette[0], width: 20 });
-        updateUI();
-    }
-
-    function toggleWeft() {
-        const linked = document.getElementById('linkWeft').checked;
-        const col = document.getElementById('weftCol');
-        col.style.opacity = linked ? '0.3' : '1';
-        col.style.pointerEvents = linked ? 'none' : 'auto';
-        render();
-    }
+    function updateWidth(t, i, v) { (t === 'warp' ? warp : weft)[i].width = parseInt(v) || 1; render(); }
+    function addThread(t) { (t === 'warp' ? warp : weft).push({ color: palette[0]||"#000", width: 20 }); updateUI(); }
+    function toggleWeft() { const l = document.getElementById('linkWeft').checked; const c = document.getElementById('weftCol'); c.style.opacity = l ? '0.3' : '1'; c.style.pointerEvents = l ? 'none' : 'auto'; render(); }
 
     function render() {
         const zoom = parseInt(document.getElementById('zoom').value);
-        const warpSeq = [];
-        warp.forEach(t => { for(let i=0; i<t.width; i++) warpSeq.push(t.color); });
-        
+        const wSeq = []; warp.forEach(t => { for(let i=0; i<t.width; i++) wSeq.push(t.color); });
         const linked = document.getElementById('linkWeft').checked;
         const weftData = linked ? warp : weft;
-        const weftSeq = [];
-        weftData.forEach(t => { for(let i=0; i<t.width; i++) weftSeq.push(t.color); });
+        const fSeq = []; weftData.forEach(t => { for(let i=0; i<t.width; i++) fSeq.push(t.color); });
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let x = 0; x < canvas.width / zoom; x++) {
             for (let y = 0; y < canvas.height / zoom; y++) {
-                const c1 = warpSeq[x % warpSeq.length] || "#fff";
-                const c2 = weftSeq[y % weftSeq.length] || "#fff";
-                ctx.fillStyle = blend(c1, c2);
+                ctx.fillStyle = blend(wSeq[x % wSeq.length] || "#fff", fSeq[y % fSeq.length] || "#fff");
                 ctx.fillRect(x * zoom, y * zoom, zoom, zoom);
             }
         }
@@ -354,17 +284,10 @@
     }
     function rotateHsl(hsl, deg) { return { ...hsl, h: (hsl.h + deg + 360) % 360 }; }
     function lightenHsl(hsl, amt) { return { ...hsl, l: Math.max(0, Math.min(100, hsl.l + amt)) }; }
-
-    function saveImage() {
-        const link = document.createElement('a');
-        link.download = 'plaid.png';
-        link.href = canvas.toDataURL();
-        link.click();
-    }
+    function saveImage() { const link = document.createElement('a'); link.download = 'plaid.png'; link.href = canvas.toDataURL(); link.click(); }
 
     previewBase("#4a90e2");
     updateUI();
 </script>
-
 </body>
 </html>
